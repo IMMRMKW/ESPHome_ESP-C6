@@ -1,5 +1,5 @@
 # ESPHome_ESP-C6
-Example project that shows how to flash your ESP32-C6 board with ESPHome using the Arduino framework. To get this to work, some libraries that are natively in ESPHome are ignored and replaced by their up-to-date namesakes. These libraries are added via their respective git repositories. Next, a local, slightly modified version of ESPHome was created where *web_server_base.h* and *captive_portal.h* were modified. Instead of override, these header files simply define some functions, as these were not present in the imported libraries yet.
+Example project that shows how to flash your ESP32-C6 board with ESPHome using the Arduino framework. To make this work, some libraries that are natively in ESPHome are ignored and replaced by their up-to-date namesakes, which are added via their respective git repositories. Next, a local, slightly modified version of ESPHome was created. *web_server_base.h* and *captive_portal.h*, instead of override, these header files simply define some functions, as these were not present in the imported libraries yet.
 
 To get this work it is required that you have installed [Python](https://www.python.org/downloads/) and [git](https://git-scm.com/downloads). Next, follow these steps:
 
