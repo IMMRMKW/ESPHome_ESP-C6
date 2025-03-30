@@ -1,0 +1,186 @@
+esphome:
+  name: espnibe
+  friendly_name: NIBE_ESP
+  platformio_options:
+    board: "esp32-c6-devkitc-1"
+    framework: "arduino"
+    platform: https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
+    lib_deps:
+      - "https://github.com/ESP32Async/AsyncTCP.git"
+      - "https://github.com/ESP32Async/ESPAsyncWebServer.git"
+    lib_extra_dirs:
+      - ".esphome\\build\\espnibe\\.piolibdeps\\AsyncTCP-esphome\\"
+      - ".esphome\\build\\espnibe\\.piolibdeps\\ESPAsyncWebserver-esphome\\"
+    lib_ignore:
+      - "AsyncTCP-esphome"
+      - "ESPAsyncWebServer-esphome"
+    lib_ldf_mode: deep
+    extra_configs:
+      - platformio_override.ini
+    platform_packages:
+      - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.2
+      - framework-arduinoespressif32-libs @ https://github.com/espressif/arduino-esp32/releases/download/3.0.2/esp32-arduino-libs-3.0.2.zip
+    
+    build_flags:
+     - -D ARDUINO_USB_MODE=1
+     - -D USE_ESP32_FRAMEWORK_ARDUINO
+     - -D USE_LOGGER_USB_SERIAL_JTAG=1
+    #build_type: release
+
+esp32:
+  board: esp32-c3-devkitc-1
+  flash_size: 4MB
+  variant: ESP32C6
+  framework:
+    type: arduino   
+
+external_components:
+  - source: 
+      type: local
+      path: components
+    components:
+      - nibegw
+
+
+
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: "randomPass"
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esphome-Web-ESP32-C6"
+    password: "bJhPXchn93Ux"
+
+captive_portal:
+
+output:
+  # Heartbeat status LED
+  - platform: gpio
+    id: statusLED
+    pin: GPIO19
+  - platform: gpio
+    id: ENABLE_PIN # Enable the chip
+    pin:
+      number: GPIO5
+      inverted: true
+  - platform: gpio
+    id: SHDN_PIN # Enable the chip
+    pin:
+      number: GPIO4
+      inverted: true
+
+interval:
+  - interval: 1000ms
+    then:
+      - output.turn_on: statusLED
+      - delay: 500ms
+      - output.turn_off: statusLED
+
+uart:
+  id: my_uart
+  rx_pin: GPIO6
+  tx_pin: GPIO7
+  baud_rate: 9600
+
+nibegw:
+#   dir_pin:
+#     number: GPIO4
+#     inverted: false
+
+  # If you have a named uart instance, you can specify this here.
+  uart_id: my_uart
+
+  udp:
+    # The target address(s) to send data to. May also be multicast addresses.
+    target:
+      - ip: 192.168.1.49
+        port: 9999
+    source:
+      - 192.168.1.49
+    # # List of source address to accept read/write from, may be empty for no filter, but
+    # # this is not recommended.
+    # source:
+    #   - 192.168.16.130
+
+    # # Optional port this device will listen to to receive read requests. Defaults to 9999
+    read_port: 9999
+
+    # # Optional port this device will listen to to receive write request. Defaults to 10000
+    write_port: 10000
+
+
+  acknowledge:
+    - MODBUS40
+
+    # Enable a dummy RMU40 accessory to receive updates
+    # to certain registers faster. This should not be
+    # enabled if you have an actual RMU40.
+    - RMU40_S4
+
+  # Constant replies to certain requests can be made
+  constants:
+    - address: MODBUS40
+      token: ACCESSORY
+      data: [
+            0x0A, # MODBUS version low
+            0x00, # MODBUS version high
+            0x02, # MODBUS address?
+      ]
+
+    # Accessory version response
+    - address: RMU40_S4
+      token: ACCESSORY
+      data: [
+            0xEE, # RMU ?
+            0x03, # RMU version low
+            0x01, # RMU version high
+      ]
+
+    # Unknown response that nibepi uses
+    - address: RMU40_S4
+      token: RMU_DATA
+      command: RMU_WRITE
+      data: [
+            0x63,
+            0x00,
+      ]
+
+    # Constant fixed temperature to avoid pump going into alarm.
+    - address: RMU40_S4
+      token: RMU_WRITE
+      data: [
+            0x06, # Temperature
+            0x14, # degrees low
+            0x00, # degrees high
+      ]
+
+# keep commented:
+
+# # Add a virtual RMU on S3
+# climate:
+#   - platform: nibegw
+#     name: s3
+#     address: RMU40_S3
+#     sensor: current_temperature_s3
+
+# # Add a temperature sensor taken from home assistant to use for virtual RMU
+# sensor:
+#   - platform: homeassistant
+#     id: current_temperature_s3
+#     entity_id: sensor.current_temperature_s3
