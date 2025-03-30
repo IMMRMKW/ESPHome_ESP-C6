@@ -1,4 +1,4 @@
-# ESPHome_ESP-C6
+# ESPHome_ESP32-C6
 Example project that shows how to flash your ESP32-C6 board with ESPHome using the Arduino framework. To get this work it is required that you have installed [Python](https://www.python.org/downloads/) and [git](https://git-scm.com/downloads). Next, follow these steps:
 
 - Navigate to the folder where you want to clone the project.
