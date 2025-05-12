@@ -57,3 +57,6 @@ To get this work it is required that you have installed [Python](https://www.pyt
     }
     ```
 The configuration should now be compiled an be uploaded to your ESP32-C6.
+
+<a href="https://www.buymeacoffee.com/immrmkw" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
